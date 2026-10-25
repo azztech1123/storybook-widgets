@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ten Doors · Wanderstay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#0A4750; --teal-2:#0D5560; --teal-deep:#06323A; --teal-ink:#042228;
+  --gold:#C9A227; --sand:#C9A96E; --ivory:#F6F1E7; --glow:#FFC979;
+  --ease:cubic-bezier(.7,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--teal-ink)}
+body{font-family:Jost,system-ui,sans-serif;color:var(--ivory);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- the corridor ---------- */
+.stage{position:relative;width:100%;height:100%;overflow:hidden;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(201,162,39,.10), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 1px, transparent 1px 22px),
+    linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 74%, var(--teal-ink) 100%);
+}
+.stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 40%, transparent 55%, rgba(0,0,0,.45) 100%)}
+.grid-mode .floor{display:none}
+.floor{position:absolute;left:0;right:0;bottom:0;height:var(--floorH,22%);pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.05) 30%, rgba(0,0,0,.35));
+  border-top:1px solid rgba(201,162,39,.18)}
+
+header{position:relative;z-index:3;text-align:center;padding:clamp(14px,3.6vh,30px) 16px 0}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-size:clamp(9px,1.35vw,11px);
+  letter-spacing:.32em;text-transform:uppercase;color:var(--sand);font-weight:400}
+.kicker img{width:clamp(22px,3.4vw,30px);height:auto;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+h1{font-family:"Cormorant Garamond",serif;font-weight:400;font-style:italic;
+  font-size:clamp(26px,5.4vw,46px);line-height:1.02;margin-top:clamp(6px,1.4vh,12px);letter-spacing:-.005em}
+h1 em{font-style:normal;color:var(--gold);font-weight:500}
+.sub{font-size:clamp(11px,1.7vw,14px);font-weight:300;opacity:.82;margin-top:6px}
+
+.moods{position:relative;z-index:3;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  padding:clamp(10px,2.2vh,18px) 14px 0}
+.mood{font-size:clamp(10px,1.45vw,12.5px);letter-spacing:.04em;padding:7px 13px;border-radius:999px;
+  border:1px solid rgba(201,169,110,.45);color:var(--ivory);opacity:.86;white-space:nowrap;
+  transition:background .35s, color .35s, border-color .35s, opacity .35s}
+.mood:hover{opacity:1;border-color:var(--gold)}
+.mood[aria-pressed="true"]{background:var(--gold);color:var(--teal-ink);border-color:var(--gold);opacity:1}
+.mood-note{position:relative;z-index:3;text-align:center;font-family:"Cormorant Garamond",serif;font-style:italic;
+  font-size:clamp(13px,1.9vw,16px);color:var(--sand);min-height:1.4em;margin-top:8px;transition:opacity .4s}
+
+.hall{position:absolute;left:0;right:0;z-index:2;display:grid;justify-content:center;align-content:center}
+.hall.grid{grid-template-columns:repeat(5, var(--dw));column-gap:var(--gap);row-gap:var(--rgap)}
+.hall.strip{display:flex;justify-content:flex-start;overflow-x:auto;scroll-snap-type:x mandatory;gap:var(--gap);
+  padding:0 calc(50% - var(--dw)/2);align-items:center;scrollbar-width:none}
+.hall.strip::-webkit-scrollbar{display:none}
+
+/* ---------- a door ---------- */
+.room{position:relative;width:var(--dw);scroll-snap-align:center;flex:0 0 auto;
+  opacity:0;transform:translateY(8px);transition:opacity .9s, transform .9s, filter .5s}
+.room.in{opacity:1;transform:none}
+.room.dim{opacity:.26;filter:saturate(.4)}
+.doorway{position:relative;display:block;width:100%;height:var(--dh);perspective:520px}
+.arch{position:absolute;inset:0;border-radius:calc(var(--dw)/2) calc(var(--dw)/2) 3px 3px;overflow:hidden;
+  box-shadow:0 0 0 1.5px rgba(201,162,39,.75), 0 0 0 6px rgba(4,34,40,.55), 0 0 0 7px rgba(201,162,39,.25);}
+.inside{position:absolute;inset:0;background:#1a1410 center/cover no-repeat;transform:scale(1.10);
+  filter:brightness(.78) saturate(1);transition:transform 1.4s var(--ease), filter 1.2s var(--ease)}
+.inside::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 70% at 50% 60%, rgba(255,201,121,.28), transparent 70%);mix-blend-mode:screen}
+.leaf{position:absolute;inset:0;transform-origin:0% 50%;transform:rotateY(-13deg);box-shadow:inset -1px 0 0 rgba(201,162,39,.35), 3px 0 6px rgba(255,201,121,.35);
+  transition:transform 1s var(--ease);backface-visibility:hidden;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.18), transparent 12%, transparent 88%, rgba(0,0,0,.22)),
+    linear-gradient(180deg, #11606B 0%, #0C4E58 55%, #093F47 100%);
+  border-radius:inherit}
+.leaf .pane{position:absolute;left:16%;right:16%;border:1px solid rgba(201,162,39,.38);border-radius:2px}
+.leaf .p1{top:12%;height:34%;border-radius:calc(var(--dw)/2.6) calc(var(--dw)/2.6) 2px 2px}
+.leaf .p2{top:52%;height:38%}
+.leaf .knob{position:absolute;right:13%;top:52%;width:max(6px,calc(var(--dw)*.075));aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #FFE7A3, var(--gold) 45%, #6d5413 100%);box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.leaf .plate{position:absolute;left:50%;top:5.5%;transform:translateX(-50%);
+  font-family:"Cormorant Garamond",serif;font-weight:600;font-size:max(10px,calc(var(--dw)*.15));letter-spacing:.06em;
+  color:#3b2c06;padding:1px 7px;border-radius:999px;
+  background:linear-gradient(180deg,#F3D57A,#C9A227 60%,#9c7c17);box-shadow:0 1px 2px rgba(0,0,0,.45)}
+.under{position:absolute;left:6%;right:6%;bottom:-4px;height:7px;border-radius:50%;
+  background:var(--glow);filter:blur(5px);opacity:.7;animation:breathe 5.5s ease-in-out infinite;transition:opacity .5s}
+.pool{position:absolute;left:-30%;right:-30%;top:calc(100% - 2px);height:calc(var(--dh)*.32);pointer-events:none;
+  background:radial-gradient(50% 55% at 50% 0%, rgba(255,201,121,.38), transparent 70%);opacity:.6;transition:opacity .6s}
+@keyframes breathe{0%,100%{opacity:.6}50%{opacity:.95}}
+.label{margin:calc(var(--dh)*.1) calc(var(--gap)/-2) 0;text-align:center;line-height:1.15}
+.label b{display:block;font-family:"Cormorant Garamond",serif;font-weight:500;font-size:clamp(12px,1.85vw,16px);letter-spacing:.01em}
+.label i{display:block;font-style:normal;font-size:clamp(8.5px,1.15vw,10px);letter-spacing:.2em;text-transform:uppercase;color:var(--sand);margin-top:3px}
+
+.doorway:hover .leaf,.doorway:focus-visible .leaf{transform:rotateY(-30deg)}
+.room.lit .leaf{transform:rotateY(-24deg)}
+.room.lit .inside{filter:brightness(.95)}
+.doorway:hover .inside,.doorway:focus-visible .inside{filter:brightness(.8);transform:scale(1.06)}
+.doorway:hover .under,.doorway:focus-visible .under{opacity:1}
+.doorway:hover ~ .pool,.room.hot .pool{opacity:1}
+.doorway:focus-visible{outline:none}
+.doorway:focus-visible .arch{box-shadow:0 0 0 2px var(--gold),0 0 0 7px rgba(201,162,39,.35)}
+.room.lit .under{opacity:1;animation:none}
+.room.lit .pool{opacity:.95}
+.room.open .leaf{transform:rotateY(-104deg)}
+.room.open .inside{filter:brightness(1.02);transform:scale(1)}
+
+.hint{position:absolute;left:0;right:0;bottom:clamp(8px,2vh,16px);z-index:3;text-align:center;
+  font-size:clamp(9px,1.25vw,11px);letter-spacing:.28em;text-transform:uppercase;color:rgba(246,241,231,.55)}
+.hint span{color:var(--gold)}
+
+/* ---------- inside the room ---------- */
+.view{position:absolute;inset:0;z-index:10;visibility:hidden;background:#000}
+.view.on{visibility:visible}
+.photo{position:absolute;inset:0;background:#000 center/cover no-repeat;opacity:0;transition:opacity .9s}
+.photo.show{opacity:1}
+.photo.drift{animation:drift 22s linear forwards}
+@keyframes drift{from{transform:scale(1.03)}to{transform:scale(1.13)}}
+.shade{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, rgba(4,34,40,.55) 0%, rgba(4,34,40,0) 22%, rgba(4,34,40,0) 42%, rgba(4,34,40,.82) 78%, rgba(4,34,40,.96) 100%)}
+.back{position:absolute;top:14px;left:14px;z-index:2;font-size:clamp(10px,1.4vw,12px);letter-spacing:.18em;text-transform:uppercase;
+  padding:8px 13px;border-radius:999px;background:rgba(4,34,40,.55);border:1px solid rgba(201,169,110,.5);backdrop-filter:blur(6px)}
+.back:hover{border-color:var(--gold);color:var(--gold)}
+.card{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0 clamp(16px,4vw,34px) clamp(16px,3.4vh,28px);
+  transform:translateY(16px);opacity:0;transition:transform .9s var(--ease) .25s, opacity .9s .25s}
+.view.on .card{transform:none;opacity:1}
+.card .no{font-size:clamp(9px,1.3vw,11px);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.card h2{font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:500;font-size:clamp(30px,6.4vw,58px);line-height:1;margin:6px 0 8px}
+.card p{font-size:clamp(12px,1.9vw,16px);font-weight:300;max-width:34em;line-height:1.45;opacity:.95}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.facts span{font-size:clamp(9.5px,1.35vw,11.5px);letter-spacing:.06em;padding:5px 10px;border-radius:999px;border:1px solid rgba(201,169,110,.5);background:rgba(4,34,40,.35)}
+.row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-top:14px;flex-wrap:wrap}
+.thumbs{display:flex;gap:8px}
+.thumbs button{width:clamp(48px,9vw,74px);aspect-ratio:3/2;border-radius:3px;background:center/cover no-repeat;
+  box-shadow:0 0 0 1px rgba(201,169,110,.45);opacity:.6;transition:opacity .3s, box-shadow .3s}
+.thumbs button[aria-current="true"],.thumbs button:hover{opacity:1;box-shadow:0 0 0 2px var(--gold)}
+.book{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:clamp(10px,1.45vw,12.5px);letter-spacing:.2em;text-transform:uppercase;font-weight:500;
+  color:var(--teal-ink);background:var(--gold);padding:11px 18px;border-radius:2px;transition:background .3s}
+.book:hover{background:#dcb63c}
+.fly{position:absolute;z-index:20;background:#000 center/cover no-repeat;pointer-events:none}
+
+@media (max-width:559px){.truth{display:none}}
+.truth{position:absolute;right:12px;bottom:8px;z-index:3;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,241,231,.38)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.01s!important}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="floor"></div>
+  <header>
+    <div class="kicker"><img alt="" src="https://res.cloudinary.com/drnzb77g6/image/upload/c_scale,w_90,q_auto,f_auto/wanderstay/ws_logo.png">Wanderstay · 520 Sampson Street</div>
+    <h1>Ten doors. <em>One</em> is yours.</h1>
+    <div class="sub">Every room is its own world. Choose a mood, or simply open a door.</div>
+  </header>
+  <nav class="moods" id="moods" aria-label="Choose a mood"></nav>
+  <div class="mood-note" id="note"></div>
+  <main class="hall" id="hall" aria-label="The ten rooms"></main>
+  <div class="hint" id="hint">Tap a door to <span>step inside</span></div>
+  <div class="truth">Real photos · 520 Sampson St</div>
+
+  <section class="view" id="view" aria-modal="true" role="dialog" aria-label="Room">
+    <div class="photo" id="ph1"></div><div class="photo" id="ph2"></div>
+    <div class="shade"></div>
+    <button class="back" id="back">← The hallway</button>
+    <div class="card">
+      <div class="no" id="vno"></div>
+      <h2 id="vname"></h2>
+      <p id="vline"></p>
+      <div class="facts" id="vfacts"></div>
+      <div class="row">
+        <div class="thumbs" id="vthumbs"></div>
+        <a class="book" id="vbook" href="https://hotels.cloudbeds.com/reservation/Yasy9X" target="_blank" rel="noopener">Book direct ↗</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const CDN='https://res.cloudinary.com/drnzb77g6/image/upload/';
+const img=(name,tx)=>CDN+tx+'/wanderstay/'+name;
+const CAT={
+  q:{label:'Cozy Queen',facts:['Sleeps 2','Queen bed','Private ensuite','Towel warmer','43″ Smart TV']},
+  k:{label:'King · the only bathtub',facts:['Sleeps 2','King bed','Ensuite with bathtub','Towel warmer','Robes & slippers']},
+  s:{label:'Double Queen Suite',facts:['Sleeps 4','Queen bed + queen pullout','Two full bathrooms','A door between','Two Smart TVs']}
+};
+const ROOMS=[
+ {n:'01',name:'Black & White Art',c:'q',key:'bw',moods:['quiet'],line:'A private gallery in monochrome. Bold abstract art, dramatic lines, and a calm that comes from all that contrast.'},
+ {n:'02',name:'My Green, Green Garden',c:'q',key:'garden',moods:['quiet'],line:'Our most serene room. Botanical walls and verdant textures, a deep breath away from the city outside.'},
+ {n:'03',name:'H-Town Sports',c:'q',key:'sports',moods:['game'],line:'Astros, Texans, Rockets and Dynamo on the walls. Daikin Park and Shell Energy Stadium are a short walk away.'},
+ {n:'04',name:'Welcome to Hollywood',c:'q',key:'hollywood',moods:['celebrate'],line:'Lights. Camera. Stay. Movie posters, a popcorn machine and a little drama, made for birthdays.'},
+ {n:'05',name:'Safari Escape',c:'k',key:'safari',moods:['quiet','celebrate'],line:'Our only king, and the only room with a private bathtub. Rich textures and warm, wild tones. Anniversaries live here.'},
+ {n:'06',name:'Music To My Ears',c:'s',key:'music',moods:['game','friends'],line:'For people who live and breathe sound. Records on the walls, Toyota Center concerts a short ride away.'},
+ {n:'07',name:'Desert Vibes',c:'s',key:'desert',moods:['friends'],line:'Sun-bleached tones and organic textures. A calm, open-landscape suite with room for four.'},
+ {n:'08',name:'Ocean Getaway',c:'s',key:'ocean',moods:['friends','quiet'],line:'The coast, brought to the city. Cool blues and an easy exhale the moment you walk in.'},
+ {n:'09',name:'Wander Room',c:'s',key:'wander',moods:['friends','first'],line:'A love letter to exploration: maps, passport stamps and a global spirit. A favorite for first-time visitors.'},
+ {n:'10',name:'Mountain Views',c:'s',key:'mountain',moods:['friends'],line:'Snow-capped peaks meet Houston warmth. Cool, crisp and spacious, ideal for families and friends.'}
+];
+const PHOTOS={bw:3,garden:3,sports:3,hollywood:4,safari:4,music:4,desert:4,ocean:4,wander:3,mountain:4};
+const MOODS=[
+ {id:'all',label:'All ten doors',note:''},
+ {id:'quiet',label:'A quiet night for two',note:'Four doors for slowing down.'},
+ {id:'game',label:'Game or concert night',note:'Walk to the game, come home to the team.'},
+ {id:'celebrate',label:'Celebrating',note:'Birthdays, anniversaries, a little drama.'},
+ {id:'friends',label:'Bringing friends',note:'Five suites: two bathrooms, a door between you.'},
+ {id:'first',label:'First time in Houston',note:'Start here, wanderer.'}
+];
+const stage=document.getElementById('stage'),hall=document.getElementById('hall'),moods=document.getElementById('moods'),note=document.getElementById('note');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* build moods */
+MOODS.forEach((m,i)=>{const b=document.createElement('button');b.className='mood';b.textContent=m.label;b.setAttribute('aria-pressed',i===0);
+  b.onclick=()=>setMood(m.id);b.dataset.id=m.id;moods.appendChild(b)});
+/* build doors */
+ROOMS.forEach((r,i)=>{
+  const el=document.createElement('div');el.className='room';el.dataset.i=i;
+  el.innerHTML=`<button class="doorway" aria-label="Open room ${r.n}, ${r.name}, ${CAT[r.c].label}">
+     <span class="arch"><span class="inside" style="background-image:url('${img('ws_'+r.key+'_1.jpg','c_fill,g_auto,w_360,h_760,q_auto,f_auto')}')"></span>
+     <span class="leaf"><span class="pane p1"></span><span class="pane p2"></span><span class="knob"></span><span class="plate">${r.n}</span></span></span>
+     <span class="under"></span></button><span class="pool"></span>
+     <div class="label"><b>${r.name}</b><i>${r.c==='s'?'Suite for four':r.c==='k'?'King + bathtub':'Cozy queen'}</i></div>`;
+  el.querySelector('.doorway').onclick=()=>enter(i);
+  hall.appendChild(el);
+});
+
+/* layout: grid on roomy frames, a snap strip on narrow ones */
+function layout(){
+  const W=stage.clientWidth,H=stage.clientHeight;
+  const top=hall.previousElementSibling.getBoundingClientRect().bottom-stage.getBoundingClientRect().top;
+  const bottom=Math.max(26,H*.06);
+  const avail=H-top-bottom;
+  const grid = W>=560 && avail>=330;
+  hall.className='hall '+(grid?'grid':'strip'); stage.classList.toggle('grid-mode',grid);
+  let dw,dh,gap,rgap;
+  if(grid){
+    // two rows of five; label takes ~ 0.42*dw
+    dh=Math.min((avail-28)/2/1.42, (W-60)/5/0.62*1.0);
+    dh=Math.min(dh,(W*0.86)/5*2.05);
+    dw=dh/2.05; gap=Math.min(dw*.42,W*.05); rgap=dh*.12;
+  }else{
+    dh=Math.min(avail*.72, W*0.62); dw=dh/2.05; gap=dw*.45; rgap=0;
+  }
+  stage.style.setProperty('--dw',dw+'px');stage.style.setProperty('--dh',dh+'px');
+  stage.style.setProperty('--gap',gap+'px');stage.style.setProperty('--rgap',rgap+'px');
+  hall.style.top=top+'px';hall.style.bottom=bottom+'px';
+  stage.style.setProperty('--floorH', grid? (avail*.5/H*100+'%') : '30%');
+}
+addEventListener('resize',layout);
+
+/* corridor lights switch on one by one */
+function intro(){
+  [...hall.children].forEach((el,i)=>setTimeout(()=>el.classList.add('in'),reduce?0:180+i*120));
+}
+/* a life behind the doors: now and then a light flickers warmer */
+function life(){
+  if(reduce)return;
+  setInterval(()=>{ if(view.classList.contains('on'))return;
+    const live=[...hall.children].filter(e=>!e.classList.contains('dim'));
+    const el=live[Math.floor(Math.random()*live.length)]; if(!el)return;
+    el.classList.add('hot'); setTimeout(()=>el.classList.remove('hot'),1600);
+  },2600);
+}
+function setMood(id){
+  [...moods.children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id));
+  const m=MOODS.find(x=>x.id===id); note.style.opacity=0;
+  setTimeout(()=>{note.textContent=m.note;note.style.opacity=1;layout()},200);
+  [...hall.children].forEach((el,i)=>{
+    const on= id==='all' || ROOMS[i].moods.includes(id);
+    el.classList.toggle('dim',!on); el.classList.toggle('lit',on && id!=='all');
+  });
+  if(hall.classList.contains('strip')){const first=[...hall.children].find(e=>!e.classList.contains('dim'));first&&first.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+}
+
+/* ---------- open a door, step inside ---------- */
+const view=document.getElementById('view'),ph=[document.getElementById('ph1'),document.getElementById('ph2')];
+let cur=null,front=0,photoIdx=0;
+function showPhoto(url){
+  const next=ph[1-front],prev=ph[front];
+  const pre=new Image();pre.onload=()=>{
+    next.style.backgroundImage=`url('${url}')`;next.classList.remove('drift');void next.offsetWidth;
+    next.classList.add('show','drift');prev.classList.remove('show');front=1-front;};
+  pre.src=url;
+}
+function bigUrl(key,k){return img(`ws_${key}_${k}.jpg`,'c_limit,w_1600,q_auto,f_auto')}
+function enter(i){
+  if(cur!==null)return; cur=i; const r=ROOMS[i]; const room=hall.children[i];
+  room.classList.add('open');
+  const arch=room.querySelector('.arch').getBoundingClientRect(),S=stage.getBoundingClientRect();
+  const url=bigUrl(r.key,1); new Image().src=url;
+  setTimeout(()=>{
+    const fly=document.createElement('div');fly.className='fly';
+    fly.style.cssText=`left:${arch.left-S.left}px;top:${arch.top-S.top}px;width:${arch.width}px;height:${arch.height}px;background-image:url('${url}');border-radius:${arch.width/2}px ${arch.width/2}px 3px 3px`;
+    stage.appendChild(fly);
+    const anim=fly.animate([
+      {left:fly.style.left,top:fly.style.top,width:fly.style.width,height:fly.style.height,borderRadius:fly.style.borderRadius,filter:'brightness(1)'},
+      {left:'0px',top:'0px',width:S.width+'px',height:S.height+'px',borderRadius:'0px',filter:'brightness(1)'}
+    ],{duration:reduce?1:850,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
+    anim.onfinish=()=>{ openView(i); setTimeout(()=>fly.remove(),350); };
+  }, reduce?0:620);
+}
+function openView(i){
+  const r=ROOMS[i],c=CAT[r.c];
+  document.getElementById('vno').textContent=`No. ${r.n} · ${c.label}`;
+  document.getElementById('vname').textContent=r.name;
+  document.getElementById('vline').textContent=r.line;
+  document.getElementById('vfacts').innerHTML=c.facts.map(f=>`<span>${f}</span>`).join('');
+  const th=document.getElementById('vthumbs');th.innerHTML='';
+  for(let k=1;k<=PHOTOS[r.key];k++){
+    const b=document.createElement('button');b.style.backgroundImage=`url('${img(`ws_${r.key}_${k}.jpg`,'c_fill,g_auto,w_180,h_120,q_auto,f_auto')}')`;
+    b.setAttribute('aria-label',`Photo ${k} of ${r.name}`);b.setAttribute('aria-current',k===1);
+    b.onclick=()=>{[...th.children].forEach(x=>x.setAttribute('aria-current',x===b));showPhoto(bigUrl(r.key,k));};
+    th.appendChild(b);
+  }
+  ph.forEach(p=>{p.classList.remove('show','drift');});
+  ph[0].style.backgroundImage=`url('${bigUrl(r.key,1)}')`;front=0;ph[0].classList.add('show','drift');
+  view.classList.add('on');document.getElementById('back').focus({preventScroll:true});
+}
+function leave(){
+  if(cur===null)return; const room=hall.children[cur];
+  view.classList.remove('on'); ph.forEach(p=>p.classList.remove('show'));
+  setTimeout(()=>{room.classList.remove('open');room.querySelector('.doorway').focus({preventScroll:true});cur=null;},300);
+}
+document.getElementById('back').onclick=leave;
+addEventListener('keydown',e=>{if(e.key==='Escape')leave()});
+
+/* warm the cache for the first photo of each room */
+ROOMS.forEach(r=>{new Image().src=img(`ws_${r.key}_1.jpg`,'c_fill,g_auto,w_360,h_760,q_auto,f_auto')});
+document.fonts && document.fonts.ready.then(layout); layout(); intro(); life();
+</script>
+</body>
+</html>
